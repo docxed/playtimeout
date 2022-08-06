@@ -14,7 +14,7 @@ class Server {
 
   middlewares() {
     const corsOptions = {
-        origin: process.env.NODE_ENV === "production" ? ["http://localhost"] : true,
+        origin: process.env.NODE_ENV === "production" ? ["https://playtimeout-frontend.herokuapp.com", "http://localhost"] : true,
     }
     this.app.use(express.json())
     this.app.use(cors(corsOptions))
