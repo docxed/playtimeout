@@ -74,8 +74,7 @@
 <script>
 import moment from "moment"
 import axios from "axios"
-import { throws } from "assert"
-const url = process.env.NUXT_ENV_ENDPOINT
+const url = process.env.NUXT_ENV_PLAYTIMEOUT_ENDPOINT
 moment.locale("th")
 export default {
   name: "IndexPage",
