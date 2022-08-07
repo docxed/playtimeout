@@ -28,7 +28,8 @@ class Server {
       res.status(200).send("ok")
     })
     this.app.post("/notify", (req, res) => {
-      const { message } = req.body
+      const { message, stickerPackageId, stickerId } = req.body
+      console.log(`message=${message}&stickerPackageId=${stickerPackageId}&stickerId=${stickerId}`)
       axios({
         method: "post",
         url: `https://${process.env.LINE_NOTIFY_HOST}/api/notify`,
@@ -37,13 +38,13 @@ class Server {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Access-Control-Allow-Origin': '*'
         },
-        data: `message=${message}`
+        data: `message=${message}&stickerPackageId=${stickerPackageId}&stickerId=${stickerId}`
       })
         .then(response => {
             res.status(200).send("ok")
         })
         .catch(error => {
-            console.log(error)
+   
             res.status(500).send("error")
         })
     })

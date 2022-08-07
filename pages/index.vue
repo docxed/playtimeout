@@ -4,14 +4,17 @@
       <div class="text-h4 mb-5">⏰ จับเวลาเล่นเกม</div>
       <div class="box text-center mb-5" style="background-color: #ffffff">
         <div class="black--text" style="font-size: 5rem">{{ timeConvert(millisecond) }}</div>
-        <div v-if="stage === null">
-          <v-btn color="dark" x-large @click="startTimer()">เริ่ม</v-btn>
-        </div>
-        <div v-else-if="stage === 'start'">
-          <v-btn color="error" x-large @click="stopTimer()">หยุด</v-btn>
-        </div>
-        <div v-else-if="stage === 'stop'">
-          <v-btn color="info" x-large @click="startTimer()">ดำเนินการต่อ</v-btn>
+
+        <div class="mb-3">
+          <div v-if="stage === null">
+            <v-btn color="dark" x-large @click="startTimer()">เริ่ม</v-btn>
+          </div>
+          <div v-else-if="stage === 'start'">
+            <v-btn color="error" x-large @click="stopTimer()">หยุด</v-btn>
+          </div>
+          <div v-else-if="stage === 'stop'">
+            <v-btn color="info" x-large @click="startTimer()">ดำเนินการต่อ</v-btn>
+          </div>
         </div>
       </div>
       <div class="mb-2">
@@ -20,6 +23,7 @@
           prepend-icon="mdi-account"
           :items="['องศา', 'น้องอัญ']"
           filled
+          @change="changePlayer()"
           label="ผู้เล่น"
         ></v-select>
       </div>
@@ -30,6 +34,7 @@
               v-model="setHour"
               type="number"
               min="1"
+              max="23"
               label="จำนวนชั่วโมง"
               filled
               dense
@@ -52,6 +57,7 @@
               v-model="setMinute"
               type="number"
               min="1"
+              max="59"
               label="จำนวนนาที"
               filled
               dense
@@ -75,6 +81,7 @@
 import moment from "moment"
 import axios from "axios"
 const url = process.env.NUXT_ENV_PLAYTIMEOUT_ENDPOINT
+
 moment.locale("th")
 export default {
   name: "IndexPage",
@@ -88,6 +95,10 @@ export default {
         },
       ],
     }
+  },
+  mounted() {
+    const player = localStorage.getItem("player")
+    if (player) this.player = player
   },
   data: () => ({
     setHour: 3,
@@ -103,6 +114,7 @@ export default {
     },
     startTimer() {
       this.stage = "start"
+
       this.timer = setInterval(() => {
         this.millisecond -= 1000
       }, 1000)
@@ -115,6 +127,9 @@ export default {
       this.stage = null
       this.millisecond = 10 * 1000
       clearInterval(this.timer)
+    },
+    changePlayer() {
+      localStorage.setItem("player", this.player)
     },
     increaseTimer(value) {
       const { type } = value
@@ -130,7 +145,7 @@ export default {
       const prefix = `${moment().format("LT")} น. |`
       let message = `${prefix} ➕ ${this.player} ได้ทำการบวก${word}เล่นเกม ${
         type === "hour" ? this.setHour : this.setMinute
-      } ${word} เหลือเวลาเล่น ${moment.utc(this.millisecond).format("H:mm")} ชั่วโมง`
+      } ${word} เหลือเวลาเล่น ${moment.utc(this.millisecond).format("H:mm:ss")} ชั่วโมง`
       axios.post(`${url}/notify`, {
         message: message,
       })
@@ -148,7 +163,7 @@ export default {
       const prefix = `${moment().format("LT")} น. |`
       let message = `${prefix} ➖ ${this.player} ได้ทำการลบ${word}เล่นเกม ${
         type === "hour" ? this.setHour : this.setMinute
-      } ${word} เหลือเวลาเล่น ${moment.utc(this.millisecond).format("H:mm")} ชั่วโมง`
+      } ${word} เหลือเวลาเล่น ${moment.utc(this.millisecond).format("H:mm:ss")} ชั่วโมง`
       axios.post(`${url}/notify`, {
         message: message,
       })
@@ -156,26 +171,34 @@ export default {
     notifyTimer(value) {
       const { type, time } = value
       const prefix = `${moment().format("LT")} น. |`
-      let message
+      let message = ""
+      let stickerPackageId = ""
+      let stickerId = ""
 
       if (type === "start timer") {
         let timeStart = new Date()
         let timeOut = timeStart.setSeconds(timeStart.getSeconds() + time / 1000)
         message = `${prefix} 🤣 ${this.player} เริ่มจับเวลาเล่นเกม ${moment
           .utc(time)
-          .format("H")} ชั่วโมง และจะหมดเวลาเล่นใน ${moment(timeOut).format("LT")} น.`
+          .format("H:mm:ss")} ชั่วโมง และจะหมดเวลาเล่นใน ${moment(timeOut).format("LT")} น.`
+        stickerPackageId = `446`
+        stickerId = `1992`
       } else if (type === "pause timer") {
         message = `${prefix} ⏸️ ${this.player} หยุดจับเวลา และเหลือเวลาเล่นอีก ${moment
           .utc(time)
-          .format("H:mm")} ชั่วโมง`
+          .format("H:mm:ss")} ชั่วโมง`
       } else if (type === "resume timer") {
         message = `${prefix} ▶️ ${this.player} จับเวลาต่อ`
       } else if (type === "time up") {
         message = `${prefix} 🥲 ${this.player} หมดเวลาเล่นเกมแล้ว`
+        stickerPackageId = `446`
+        stickerId = `2007`
       }
 
       axios.post(`${url}/notify`, {
         message: message,
+        stickerPackageId: stickerPackageId,
+        stickerId: stickerId,
       })
     },
   },
