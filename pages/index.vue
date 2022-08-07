@@ -1,5 +1,6 @@
 <template>
   <v-row justify="center" align="center">
+    <alert :alertData.sync="alertData" />
     <v-col sm="12" md="7" lg="7">
       <div class="text-h4 mb-5">⏰ จับเวลาเล่นเกม</div>
       <div class="box text-center mb-5" style="background-color: #ffffff">
@@ -106,6 +107,12 @@ export default {
     millisecond: 3 * 60 * 60 * 1000,
     stage: null,
     player: "องศา",
+    alertSuccess: false,
+    alertData: {
+      onDisplay: false,
+      message: "",
+      color: null,
+    },
   }),
   methods: {
     timeConvert(millisecond) {
@@ -133,7 +140,9 @@ export default {
     },
     increaseTimer(value) {
       const { type } = value
-      let word
+      let word = ""
+      let stickerPackageId = ""
+      let stickerId = ""
       if (type === "hour") {
         this.millisecond += this.setHour * 60 * 60 * 1000
         word = "ชั่วโมง"
@@ -146,13 +155,32 @@ export default {
       let message = `${prefix} ➕ ${this.player} ได้ทำการบวก${word}เล่นเกม ${
         type === "hour" ? this.setHour : this.setMinute
       } ${word} เหลือเวลาเล่น ${moment.utc(this.millisecond).format("H:mm:ss")} ชั่วโมง`
-      axios.post(`${url}/notify`, {
-        message: message,
-      })
+      axios
+        .post(`${url}/notify`, {
+          message: message,
+          stickerPackageId: stickerPackageId,
+          stickerId: stickerId,
+        })
+        .then(() => {
+          this.alertData = {
+            onDisplay: true,
+            message: "ส่งการแจ้งเตือน LINE สำเร็จ",
+            color: "green",
+          }
+        })
+        .catch(() => {
+          this.alertData = {
+            onDisplay: true,
+            message: "ส่งการแจ้งเตือน LINE ล้มเหลว",
+            color: "red",
+          }
+        })
     },
     decreaseTimer(value) {
       const { type } = value
-      let word
+      let word = ""
+      let stickerPackageId = ""
+      let stickerId = ""
       if (type === "hour") {
         this.millisecond -= this.setHour * 60 * 60 * 1000
         word = "ชั่วโมง"
@@ -164,9 +192,26 @@ export default {
       let message = `${prefix} ➖ ${this.player} ได้ทำการลบ${word}เล่นเกม ${
         type === "hour" ? this.setHour : this.setMinute
       } ${word} เหลือเวลาเล่น ${moment.utc(this.millisecond).format("H:mm:ss")} ชั่วโมง`
-      axios.post(`${url}/notify`, {
-        message: message,
-      })
+      axios
+        .post(`${url}/notify`, {
+          message: message,
+          stickerPackageId: stickerPackageId,
+          stickerId: stickerId,
+        })
+        .then(() => {
+          this.alertData = {
+            onDisplay: true,
+            message: "ส่งการแจ้งเตือน LINE สำเร็จ",
+            color: "green",
+          }
+        })
+        .catch(() => {
+          this.alertData = {
+            onDisplay: true,
+            message: "ส่งการแจ้งเตือน LINE ล้มเหลว",
+            color: "red",
+          }
+        })
     },
     notifyTimer(value) {
       const { type, time } = value
@@ -195,11 +240,26 @@ export default {
         stickerId = `2007`
       }
 
-      axios.post(`${url}/notify`, {
-        message: message,
-        stickerPackageId: stickerPackageId,
-        stickerId: stickerId,
-      })
+      axios
+        .post(`${url}/notify`, {
+          message: message,
+          stickerPackageId: stickerPackageId,
+          stickerId: stickerId,
+        })
+        .then(() => {
+          this.alertData = {
+            onDisplay: true,
+            message: "ส่งการแจ้งเตือน LINE สำเร็จ",
+            color: "green",
+          }
+        })
+        .catch(() => {
+          this.alertData = {
+            onDisplay: true,
+            message: "ส่งการแจ้งเตือน LINE ล้มเหลว",
+            color: "red",
+          }
+        })
     },
   },
   watch: {
