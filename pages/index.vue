@@ -1,5 +1,10 @@
 <template>
   <v-row justify="center" align="center">
+    <v-overlay :value="overlay">
+      <v-card elevation="24" loading outlined light>
+        <v-card-text> กำลังเชื่อมต่อ... </v-card-text>
+      </v-card>
+    </v-overlay>
     <alert :alertData.sync="alertData" />
     <v-col sm="12" md="7" lg="7">
       <div class="text-h4 mb-5">⏰ จับเวลาเล่นเกม</div>
@@ -100,6 +105,7 @@ export default {
   mounted() {
     const player = localStorage.getItem("player")
     if (player) this.player = player
+    this.helloBackend()
   },
   data: () => ({
     setHour: 3,
@@ -113,6 +119,8 @@ export default {
       message: "",
       color: null,
     },
+    overlay: false,
+    startLoader: false,
   }),
   methods: {
     timeConvert(millisecond) {
@@ -121,7 +129,6 @@ export default {
     },
     startTimer() {
       this.stage = "start"
-
       this.timer = setInterval(() => {
         this.millisecond -= 1000
       }, 1000)
@@ -139,6 +146,7 @@ export default {
       localStorage.setItem("player", this.player)
     },
     increaseTimer(value) {
+      this.overlay = true
       const { type } = value
       let word = ""
       let stickerPackageId = ""
@@ -167,6 +175,7 @@ export default {
             message: "ส่งการแจ้งเตือน LINE สำเร็จ",
             color: "green",
           }
+          this.overlay = false
         })
         .catch(() => {
           this.alertData = {
@@ -174,9 +183,11 @@ export default {
             message: "ส่งการแจ้งเตือน LINE ล้มเหลว",
             color: "red",
           }
+          this.overlay = false
         })
     },
     decreaseTimer(value) {
+      this.overlay = true
       const { type } = value
       let word = ""
       let stickerPackageId = ""
@@ -204,6 +215,7 @@ export default {
             message: "ส่งการแจ้งเตือน LINE สำเร็จ",
             color: "green",
           }
+          this.overlay = false
         })
         .catch(() => {
           this.alertData = {
@@ -211,9 +223,11 @@ export default {
             message: "ส่งการแจ้งเตือน LINE ล้มเหลว",
             color: "red",
           }
+          this.overlay = false
         })
     },
     notifyTimer(value) {
+      this.overlay = true
       const { type, time } = value
       const prefix = `${moment().format("LT")} น. |`
       let message = ""
@@ -252,11 +266,34 @@ export default {
             message: "ส่งการแจ้งเตือน LINE สำเร็จ",
             color: "green",
           }
+          this.overlay = false
         })
         .catch(() => {
           this.alertData = {
             onDisplay: true,
             message: "ส่งการแจ้งเตือน LINE ล้มเหลว",
+            color: "red",
+          }
+          this.overlay = false
+        })
+    },
+    helloBackend() {
+      this.overlay = true
+      axios
+        .get(`${url}`)
+        .then(() => {
+          this.overlay = false
+          this.alertData = {
+            onDisplay: true,
+            message: "เชื่อมต่อเซิร์ฟเวอร์สำเร็จ",
+            color: "green",
+          }
+        })
+        .catch(() => {
+          this.overlay = false
+          this.alertData = {
+            onDisplay: true,
+            message: "เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ",
             color: "red",
           }
         })
