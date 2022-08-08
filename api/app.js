@@ -29,7 +29,6 @@ class Server {
     })
     this.app.post("/notify", (req, res) => {
       const { message, stickerPackageId, stickerId } = req.body
-      console.log(`message=${message}&stickerPackageId=${stickerPackageId}&stickerId=${stickerId}`)
       axios({
         method: "post",
         url: `https://${process.env.LINE_NOTIFY_HOST}/api/notify`,
