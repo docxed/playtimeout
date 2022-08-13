@@ -111,9 +111,9 @@ export default {
     setHour: 3,
     setMinute: 5,
     millisecond: 3 * 60 * 60 * 1000,
+    cheatSecond: 0,
     stage: null,
     player: "องศา",
-    alertSuccess: false,
     alertData: {
       onDisplay: false,
       message: "",
@@ -141,9 +141,20 @@ export default {
       this.stage = null
       this.millisecond = 10 * 1000
       clearInterval(this.timer)
+      this.$store.commit("SET_OVERLAY_DATA", {
+        isOpen: true,
+        title: "หมดเวลาเล่นเกมแล้ว",
+        text: "",
+      })
+      this.startCheat()
     },
     changePlayer() {
       localStorage.setItem("player", this.player)
+    },
+    startCheat() {
+      this.cheatTimer = setInterval(() => {
+        this.cheatSecond += 1000
+      }, 1000)
     },
     increaseTimer(value) {
       this.overlay = true
@@ -298,8 +309,45 @@ export default {
           }
         })
     },
+    notifyCheat() {
+      this.overlay = true
+      const prefix = `${moment().format("LT")} น. |`
+      let message = ""
+      let stickerPackageId = ""
+      let stickerId = ""
+      message = `${prefix} 🚨 ${this.player} โกงเวลาเล่น เป็นเวลา ${
+        this.cheatSecond / 60 / 1000
+      } นาที`
+      stickerPackageId = `446`
+      stickerId = `2004`
+      axios
+        .post(`${url}/notify`, {
+          message: message,
+          stickerPackageId: stickerPackageId,
+          stickerId: stickerId,
+        })
+        .then(() => {
+          this.alertData = {
+            onDisplay: true,
+            message: "ส่งการแจ้งเตือน LINE สำเร็จ",
+            color: "green",
+          }
+          this.overlay = false
+        })
+        .catch(() => {
+          this.alertData = {
+            onDisplay: true,
+            message: "ส่งการแจ้งเตือน LINE ล้มเหลว",
+            color: "red",
+          }
+          this.overlay = false
+        })
+    },
   },
   watch: {
+    cheatSecond(value) {
+      if (value % (5 * 60 * 1000) === 0) this.notifyCheat()
+    },
     millisecond(value) {
       if (value <= 0) this.timeUp()
     },
