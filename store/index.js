@@ -5,7 +5,7 @@ export const state = () => ({
     text: "",
   },
 })
-//
+
 export const getters = {
   getOverlayData: (state) => state.overlayData,
 }
